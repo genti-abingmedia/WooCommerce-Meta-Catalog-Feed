@@ -2,7 +2,7 @@
 
 ## Install and generate
 
-Upload `woocommerce-meta-catalog-feed-1.1.0.zip` under **Plugins → Add New Plugin → Upload Plugin**, then activate it.
+Upload `woocommerce-meta-catalog-feed-1.2.0.zip` under **Plugins → Add New Plugin → Upload Plugin**, then activate it.
 
 Requirements: WordPress 6.6+, WooCommerce 9.6+, PHP 8.1+, a writable WordPress uploads directory, and working WooCommerce Scheduled Actions. Activate separately on each site; network activation is blocked.
 
@@ -34,9 +34,31 @@ Specific selection modes require at least one selection. If no selected products
 
 Plugin dates display **Tirana time (Europe/Tirane)**, with automatic daylight-saving adjustments. This does not change WordPress's timezone setting or the hourly interval.
 
-### Upgrade from 1.0.0
+### Upgrade from 1.0.0 or 1.1.0
 
-Upload the 1.1.0 ZIP and choose WordPress's option to replace the existing plugin. Do not delete the old plugin first, because deletion runs uninstall cleanup. The existing URL, fallback brand, product exclusions, and completed CSV are preserved. **All products** remains the default until you save a different selection.
+Upload the 1.2.0 ZIP and choose WordPress's option to replace the existing plugin. Do not delete the old plugin first, because deletion runs uninstall cleanup. The existing URL, fallback brand, product exclusions, and completed CSV are preserved. Saved selections are preserved. Upgrading from 1.0.0 keeps **All products** as the default until you save a different selection.
+
+## Discount Rules Pro / FlyCart discounts
+
+Version 1.2.0 automatically uses FlyCart's product discount API when Discount Rules for WooCommerce 2.6+ is active. No extra URL or feed card is created. The regular shop-display price remains in `price`; the eligible discounted shop-display price is written to `sale_price`. Native WooCommerce sales continue to work when no rule applies.
+
+Supported rules are **Product Adjustment** and **Bulk Discount** that apply to a single item, with no additional rule conditions. Product/category/tag/attribute filters remain supported through FlyCart's engine. Rule priorities and the **Calculate discount from: Regular price / Sale price** setting are respected, so the feed does not apply a native sale or a rule discount twice. Store-base tax display is applied to the raw rule price once.
+
+The feed evaluates quantity **1**, with an empty cart. It excludes rules with coupon, cart subtotal, customer, user role, login, or other additional conditions, as well as BOGO, bundles, cart adjustments, and free-shipping offers. These cannot be represented as a price available to every Meta shopper. Bulk prices requiring two or more items are excluded. Disabled, deleted, future, expired, and exhausted rules do not contribute a discount.
+
+For the Momcozy cleaning kit example, an active public 10% rule should produce:
+
+```text
+id:         73449
+price:      3800.00 ALL
+sale_price: 3420.00 ALL
+```
+
+After upgrading, select **Refresh now**, wait for **Ready**, and inspect product 73449 in the downloaded CSV. Then trigger the existing data source's import in Commerce Manager or wait for its next hourly fetch. Check Meta's `Sale price` after ingestion. If the field remains blank in the CSV, check the rule type, single-item quantity, dates, filters, and additional conditions. A lower promotional price displayed only for a larger quantity is not a single-item catalog price.
+
+An invalid result or exception from the discount API fails the generation and preserves the previous completed CSV. The plugin calculates rule prices without writing them back to WooCommerce products or changing checkout rules. The integration suite exercises FlyCart core 2.6.18; the site's licensed Pro extension and actual rules still need staging verification.
+
+Developer API: [FlyCart documentation](https://docs.flycart.org/en/articles/7907342-developer-documentation).
 
 ## Connect Meta Commerce Manager
 
@@ -81,7 +103,8 @@ WordPress serves the public CSV endpoint by reading completed files internally. 
 ## Validate before production use
 
 - Import a staging catalog containing simple products, variations with different attributes/images, product brands, and a discounted product.
-- Confirm `price` is the regular shop-display price and `sale_price` is the active discount. Future or expired sales have an empty `sale_price`.
+- Confirm `price` is the regular shop-display price and `sale_price` is the active discount. Future or expired native sales do not contribute a discount; an active eligible FlyCart rule may still populate `sale_price`.
+- Test a public Discount Rules product discount, a quantity-one bulk rule, and a quantity-two or coupon rule that should be excluded. Verify the CSV and Meta sale prices.
 - Change a product's title, price, image, and stock. Refresh, then run a Meta import and verify each change.
 - Test selected-product, category (including descendants), tag, and brand modes at the same URL.
 - Exclude a product or delete a test product. Confirm it disappears from the generated feed and is removed from the Meta data source after import.

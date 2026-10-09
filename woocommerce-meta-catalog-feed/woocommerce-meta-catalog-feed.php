@@ -2,7 +2,7 @@
 /**
  * Plugin Name: WooCommerce Meta Catalog Feed
  * Description: One hourly Meta catalog CSV in Albanian lek (ALL), with WooCommerce product selection.
- * Version: 1.1.0
+ * Version: 1.2.0
  * Author: Gliterin
  * Requires at least: 6.6
  * Requires PHP: 8.1
@@ -15,7 +15,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'WCMCF_VERSION', '1.1.0' );
+define( 'WCMCF_VERSION', '1.2.0' );
 define( 'WCMCF_FILE', __FILE__ );
 
 // Set this before cache plugins have an opportunity to cache a feed response.
@@ -25,6 +25,7 @@ if ( isset( $_GET['wcmcf_feed'] ) && '1' === $_GET['wcmcf_feed'] && ! defined( '
 
 require_once __DIR__ . '/includes/class-selection.php';
 require_once __DIR__ . '/includes/class-storage.php';
+require_once __DIR__ . '/includes/class-discounts.php';
 require_once __DIR__ . '/includes/class-mapper.php';
 require_once __DIR__ . '/includes/class-builder.php';
 require_once __DIR__ . '/includes/class-admin.php';

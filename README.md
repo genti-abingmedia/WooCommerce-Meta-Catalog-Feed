@@ -7,6 +7,7 @@ Install the ZIP from `dist/` using WordPress's plugin uploader. The plugin appea
 ## Requirements and behavior
 
 - WordPress 6.6+, WooCommerce 9.6+, PHP 8.1+.
+- Automatic FlyCart Discount Rules 2.6+ integration for public single-item product and bulk discounts, including its Regular price/Sale price calculation setting. Additional cart/customer/coupon conditions, bundles, BOGO, and quantity-two-or-more offers are excluded.
 - WooCommerce base currency ALL; the store's tax-display setting and base tax rates determine feed prices.
 - Published, catalog-visible simple products and enabled variations. Out-of-stock items remain in the feed.
 - One feed card and one permanent URL, with a dropdown for all products, selected products by name/SKU, categories, tags, or brands.
@@ -28,7 +29,7 @@ bash scripts/test-integration.sh
 python3 scripts/package.py
 ```
 
-The integration suite creates an isolated Docker WordPress/MariaDB installation, pins WordPress 6.6.2 and WooCommerce 9.6.2, and runs real product/tax/scheduler/file/HTTP/admin/uninstall checks. It uses PHP 8.3 in the container. Syntax checks can also be run locally on PHP 8.1. Containers and test volumes are deleted automatically when the script exits.
+The integration suite creates an isolated Docker WordPress/MariaDB installation, pins WordPress 6.6.2, WooCommerce 9.6.2, and FlyCart Discount Rules core 2.6.18, and runs real product/tax/discount/selection/scheduler/file/HTTP/admin/uninstall checks. The licensed FlyCart Pro add-on is not bundled or available in the test environment; test the actual store rules on staging before importing production prices. It uses PHP 8.3 in the container. Syntax checks can also be run locally on PHP 8.1. Containers and test volumes are deleted automatically when the script exits.
 
 Default test port is `127.0.0.1:18086`. Set `WCMCF_TEST_PORT` to change it. Set `WCMCF_KEEP_TEST_SITE=1` to retain the local test site for inspection. Override `WCMCF_TEST_WP_VERSION` and `WCMCF_TEST_WC_VERSION` to test another supported version. Start with clean test volumes when rerunning the entire setup:
 

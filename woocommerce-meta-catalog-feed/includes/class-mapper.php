@@ -65,13 +65,19 @@ final class Mapper {
 		}
 
 		$sale = '';
+		$effective = (float) $regular;
 		$raw_sale = $product->get_sale_price( 'edit' );
 		// Explicit dates prevent stale WooCommerce sale-cron state leaking expired discounts.
 		$start = $product->get_date_on_sale_from( 'edit' );
 		$end = $product->get_date_on_sale_to( 'edit' );
 		$now = time();
 		if ( $this->valid_price( $raw_sale ) && (float) $raw_sale < (float) $regular && ( ! $start || $start->getTimestamp() <= $now ) && ( ! $end || $end->getTimestamp() >= $now ) && $product->is_on_sale( 'edit' ) ) {
-			$sale = $this->money( $product, $raw_sale );
+			$effective = (float) $raw_sale;
+		}
+		$effective = Discounts::price( $product, (float) $regular, $effective );
+		if ( $effective < (float) $regular ) {
+			$sale = $this->money( $product, $effective );
+			if ( $sale === $this->money( $product, $regular ) ) { $sale = ''; }
 		}
 
 		return array(

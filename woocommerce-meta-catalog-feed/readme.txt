@@ -4,7 +4,7 @@ Requires at least: 6.6
 Tested up to: 6.6
 Requires PHP: 8.1
 Requires Plugins: woocommerce
-Stable tag: 1.1.0
+Stable tag: 1.2.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -25,6 +25,11 @@ The feed exports eligible published, catalog-visible simple products and enabled
 It includes out-of-stock products, even if WooCommerce hides those products in the shop.
 Product brands fall back to a configurable store brand, initially BlissPharma.
 Variable parents are exported as groups through item_group_id, without duplicate parent rows.
+
+FlyCart Discount Rules 2.6+ (including Pro) is detected automatically. Public
+single-item Product Adjustment and Bulk Discount prices populate sale_price.
+Rules with additional conditions, coupon/customer/cart offers, BOGO, bundles,
+and bulk tiers requiring more than one item are excluded. See SETUP.md.
 
 Feed columns: id, title, description, availability, condition, link, image_link,
 brand, price, sale_price, item_group_id.
@@ -91,6 +96,11 @@ WooCommerce products, orders, prices, and currency settings are preserved.
 Deactivation keeps settings and completed feed files, but stops refreshes.
 
 == Changelog ==
+
+= 1.2.0 =
+* Export public single-item FlyCart Discount Rules prices in sale_price.
+* Respect native sales, rule pricing base, active dates, usage limits, and shop tax display.
+* Isolate discount calculations from worker cart contents and preserve completed CSVs on API errors.
 
 = 1.1.0 =
 * Single feed card with all-products, product-name/SKU, category, tag, and brand selection.
