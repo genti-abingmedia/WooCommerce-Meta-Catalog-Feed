@@ -2,7 +2,7 @@
 
 ## Install and generate
 
-Upload `woocommerce-meta-catalog-feed-1.2.0.zip` under **Plugins → Add New Plugin → Upload Plugin**, then activate it.
+Upload `woocommerce-meta-catalog-feed-1.2.1.zip` under **Plugins → Add New Plugin → Upload Plugin**, then activate it.
 
 Requirements: WordPress 6.6+, WooCommerce 9.6+, PHP 8.1+, a writable WordPress uploads directory, and working WooCommerce Scheduled Actions. Activate separately on each site; network activation is blocked.
 
@@ -34,9 +34,11 @@ Specific selection modes require at least one selection. If no selected products
 
 Plugin dates display **Tirana time (Europe/Tirane)**, with automatic daylight-saving adjustments. This does not change WordPress's timezone setting or the hourly interval.
 
-### Upgrade from 1.0.0 or 1.1.0
+### Upgrade from an earlier version
 
-Upload the 1.2.0 ZIP and choose WordPress's option to replace the existing plugin. Do not delete the old plugin first, because deletion runs uninstall cleanup. The existing URL, fallback brand, product exclusions, and completed CSV are preserved. Saved selections are preserved. Upgrading from 1.0.0 keeps **All products** as the default until you save a different selection.
+Upload the 1.2.1 ZIP and choose WordPress's option to replace the existing plugin. Do not delete the old plugin first, because deletion runs uninstall cleanup. The existing URL, fallback brand, product exclusions, and completed CSV are preserved. Saved selections are preserved. Upgrading from 1.0.0 keeps **All products** as the default until you save a different selection.
+
+After upgrading, use **Refresh now** to rebuild the CSV, wait for completion, then update the data source in Meta Commerce Manager. Version 1.2.1 adds a stable `wcmcf_image` query parameter to image URLs so Meta sees a new URL and can retry previously failed image fetches. No image re-upload is required. The parameter stays fixed across hourly builds and plugin releases, and changes when the selected attachment URL or modification date changes. Image replacements made outside WordPress must also update the attachment modification date to change this revision. Existing cached CSVs receive the new URLs only after a successful rebuild. Eligibility must be checked in Commerce Manager after image processing.
 
 ## Discount Rules Pro / FlyCart discounts
 

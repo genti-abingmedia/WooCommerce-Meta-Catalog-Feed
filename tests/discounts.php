@@ -12,6 +12,9 @@ use Wdr\App\Helpers\Rule;
 use Wdr\App\Models\DBTable;
 
 $GLOBALS['wcmcf_discount_checks'] = 0;
+// FlyCart 2.6.18 writes this cart-only property; declare it in the fixture to
+// avoid its unrelated PHP 8.2+ dynamic-property deprecation during cart setup.
+class WCMCF_Discount_Cart_Product extends WC_Product_Simple { public $awdr_product_original_price; }
 function discount_check( bool $ok, string $message ): void {
 	$GLOBALS['wcmcf_discount_checks']++;
 	if ( ! $ok ) { throw new RuntimeException( $message ); }
@@ -40,8 +43,8 @@ function discount_reload(): void {
 	ManageDiscount::$calculator = new DiscountCalculator( ManageDiscount::$available_rules );
 	DiscountCalculator::$filtered_exclusive_rule = false;
 }
-function discount_config( string $from ): void {
-	Configuration::saveConfig( Configuration::DEFAULT_OPTION, array( 'calculate_discount_from' => $from, 'apply_product_discount_to' => 'biggest_discount', 'show_strikeout_when' => 'show_dynamically' ) );
+function discount_config( string $from, string $priority = 'biggest_discount' ): void {
+	Configuration::saveConfig( Configuration::DEFAULT_OPTION, array( 'calculate_discount_from' => $from, 'apply_product_discount_to' => $priority, 'show_strikeout_when' => 'show_dynamically' ) );
 	( new Configuration() )->setConfig();
 }
 add_filter( 'action_scheduler_allow_async_request_runner', '__return_false' );
@@ -64,6 +67,11 @@ $native->set_date_on_sale_from( time() - 86400 ); $native->set_date_on_sale_to( 
 discount_check( '3420.00 ALL' === discount_row( $native )['sale_price'], 'Expired native sale does not become the dynamic rule base' );
 $fixed = discount_product(); discount_rule( $fixed, array( 'product_adjustments' => array( 'type' => 'flat', 'value' => 500 ) ) ); discount_reload();
 discount_check( '3300.00 ALL' === discount_row( $fixed )['sale_price'], 'Fixed discount exports correctly' );
+$multiple = discount_product(); discount_rule( $multiple ); discount_rule( $multiple, array( 'product_adjustments' => array( 'value' => 20 ) ) ); discount_reload();
+discount_check( '3040.00 ALL' === discount_row( $multiple )['sale_price'], 'Biggest-discount priority follows FlyCart configuration' );
+discount_config( 'sale_price', 'first' );
+discount_check( '3420.00 ALL' === discount_row( $multiple )['sale_price'], 'First-match priority follows FlyCart rule order' );
+discount_config( 'sale_price' );
 $category = wp_insert_term( 'FlyCart feed category ' . wp_generate_uuid4(), 'product_cat' )['term_id'];
 $parent = new WC_Product_Variable(); $parent->set_props( array( 'name' => 'FlyCart variable', 'status' => 'publish', 'image_id' => $GLOBALS['wcmcf_discount_image'], 'category_ids' => array( $category ) ) ); $parent->save();
 $v = new WC_Product_Variation(); $v->set_props( array( 'parent_id' => $parent->get_id(), 'status' => 'publish', 'regular_price' => '3800', 'tax_status' => 'none', 'attributes' => array( 'size' => 'Small' ) ) ); $v->save(); WC_Product_Variable::sync( $parent->get_id() );
@@ -99,15 +107,17 @@ if ( ! WC()->cart ) { wc_load_cart(); }
 wp_set_current_user( get_user_by( 'login', 'wcmcf-admin' )->ID );
 WC()->cart->set_cart_contents( array( 'wcmcf-worker-item' => array(
 	'key' => 'wcmcf-worker-item', 'product_id' => $bulk->get_id(), 'variation_id' => 0,
-	'variation' => array(), 'quantity' => 5, 'data' => wc_get_product( $bulk->get_id() ),
+	'variation' => array(), 'quantity' => 5, 'data' => new WCMCF_Discount_Cart_Product( $bulk->get_id() ),
 	'line_subtotal' => 19000, 'line_total' => 19000, 'line_tax' => 0, 'line_subtotal_tax' => 0,
 	'line_tax_data' => array( 'subtotal' => array(), 'total' => array() ),
 ) ) );
-$cart = WC()->cart->get_cart(); $user = get_current_user_id();
 discount_check( 3420.0 === (float) apply_filters( 'advanced_woo_discount_rules_get_product_discount_price', 3800, $conditional, 1, 0 ), 'Real engine accepts a subtotal rule against a qualifying worker cart' );
+$cart = WC()->cart->get_cart(); $user = get_current_user_id();
+$worker_price = $cart['wcmcf-worker-item']['data']->get_price( 'edit' );
 discount_check( '' === discount_row( $conditional )['sale_price'], 'Catalog calculation rejects that conditional offer instead of publishing it for everyone' );
 discount_check( '' === discount_row( $bulk )['sale_price'], 'Worker cart quantities are ignored' );
 discount_check( $cart === WC()->cart->get_cart() && $user === get_current_user_id(), 'Worker user and cart remain unchanged' );
+discount_check( $worker_price === WC()->cart->get_cart()['wcmcf-worker-item']['data']->get_price( 'edit' ), 'Worker cart product price is not mutated by catalog calculation' );
 discount_check( ! has_filter( 'advanced_woo_discount_rules_do_process_discounts_of_each_rule', array( Discounts::class, 'public_rule' ) ), 'Scoped rule guard is removed after calculation' );
 WC()->cart->empty_cart();
 // Feed tax display remains authoritative; use untaxed API result and apply VAT once.

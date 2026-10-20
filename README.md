@@ -16,6 +16,7 @@ Install the ZIP from `dist/` using WordPress's plugin uploader. The plugin appea
 - Plugin dates use Europe/Tirane with automatic daylight-saving changes, independently of WordPress timezone settings.
 - WooCommerce `product_brand` names, alphabetically first when multiple are assigned; configurable BlissPharma fallback.
 - Numeric product/variation IDs and variable-parent `item_group_id` values for a new catalog.
+- Stable image URL revisions let Meta retry failed image fetches without re-uploading images or changing URLs every hour.
 - Cached completed feeds, batches of 100 product IDs, durable retry artifacts, and preservation of the last successful generation after failure.
 - Local generation status and paginated skipped-product reports. Meta import success must be verified in Commerce Manager.
 

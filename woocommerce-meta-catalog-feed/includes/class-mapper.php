@@ -33,7 +33,10 @@ final class Mapper {
 		foreach ( array_unique( array_filter( array( $product->get_image_id(), $parent ? $parent->get_image_id() : 0 ) ) ) as $image_id ) {
 			$candidate = wp_get_attachment_image_url( $image_id, 'full' );
 			if ( $this->valid_url( $candidate ) ) {
-				$image = $candidate;
+				// A stable URL revision prompts a fresh Meta fetch without changing every build.
+				// Keep the revision independent of plugin releases and product/price edits.
+				$revision = '1-' . substr( hash( 'sha256', $candidate . '|' . $image_id . '|' . get_post_field( 'post_modified_gmt', $image_id, 'raw' ) ), 0, 12 );
+				$image = add_query_arg( 'wcmcf_image', $revision, $candidate );
 				break;
 			}
 		}

@@ -4,7 +4,7 @@ Requires at least: 6.6
 Tested up to: 6.6
 Requires PHP: 8.1
 Requires Plugins: woocommerce
-Stable tag: 1.2.0
+Stable tag: 1.2.1
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -96,6 +96,10 @@ WooCommerce products, orders, prices, and currency settings are preserved.
 Deactivation keeps settings and completed feed files, but stops refreshes.
 
 == Changelog ==
+
+= 1.2.1 =
+* Add stable image URL revisions to prompt Meta to fetch previously failed images again.
+* Keep image URLs unchanged across hourly builds, product edits, and plugin updates; refresh the revision when the attachment URL or modification date changes.
 
 = 1.2.0 =
 * Export public single-item FlyCart Discount Rules prices in sale_price.
