@@ -47,8 +47,9 @@
 .wcmcf-brand-field { margin-bottom: 24px; }
 .wcmcf-save-row { display: flex; align-items: center; gap: 16px; }
 .wcmcf-save-row p { margin: 0; max-width: 560px; }
-.wcmcf-footer { display: flex; gap: 16px; align-items: center; padding: 18px 28px; border-top: 1px solid #e9e9eb; }
-.wcmcf-footer .wcmcf-help { margin: 0; }
+.wcmcf-footer { padding: 18px 28px; border-top: 1px solid #e9e9eb; }
+.wcmcf-footer .wcmcf-help { margin: 8px 0 12px; max-width: 800px; }
+.wcmcf-footer .wcmcf-checkbox { margin-top: 0; }
 .wcmcf-report-section { padding: 0 28px 22px; }
 .wcmcf-report-section h3 { margin: 22px 0 12px; }
 .wcmcf-report-section .widefat { border-radius: 4px; }
