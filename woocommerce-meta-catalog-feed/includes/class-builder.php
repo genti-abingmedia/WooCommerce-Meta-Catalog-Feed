@@ -11,7 +11,24 @@ final class Builder {
 	public const BATCH_SIZE = 100;
 	public const STALE_SECONDS = 900;
 
-	public static function enqueue(): bool {
+	public static function enqueue( bool $renew_images = false ): bool {
+		if ( $renew_images ) {
+			$lock = false;
+			try {
+				$lock = Storage::lock( true );
+				// Queue while holding the build lock so no worker can start before the revision is saved.
+				if ( ! as_enqueue_async_action( self::REFRESH, array(), self::GROUP ) ) { return false; }
+				as_unschedule_all_actions( self::BATCH, null, self::GROUP );
+				$build = get_option( 'wcmcf_build', array() );
+				delete_option( 'wcmcf_build' );
+				update_option( 'wcmcf_image_revision', wp_generate_uuid4(), false );
+				if ( $build && ( get_option( 'wcmcf_result', array() )['id'] ?? '' ) !== $build['id'] ) { Storage::remove_generation( $build['id'] ); }
+				return true;
+			} catch ( \Throwable $error ) {
+				self::record_failure( $error->getMessage() );
+				return false;
+			} finally { Storage::unlock( $lock ); }
+		}
 		// A recurring action already has this hook; uniqueness would suppress manual requests.
 		return (bool) as_enqueue_async_action( self::REFRESH, array(), self::GROUP );
 	}
@@ -51,6 +68,7 @@ final class Builder {
 				throw new \RuntimeException( 'Could not create a feed generation directory.' );
 			}
 			$state = array( 'id' => $id, 'offset' => 0, 'batch' => 0, 'exported' => 0, 'skipped' => 0, 'omitted' => 0, 'started' => time(), 'updated' => time(), 'brand' => get_option( 'wcmcf_fallback_brand', 'BlissPharma' ), 'selection' => Selection::prepare( Selection::get() ) );
+			$state['image_revision'] = (string) get_option( 'wcmcf_image_revision', '' );
 			update_option( 'wcmcf_build', $state, false );
 			// Snapshot only IDs, never an in-memory catalog of product objects. Stable
 			// membership avoids pagination shifts if products are edited during a build.
@@ -150,7 +168,7 @@ final class Builder {
 			if ( 0 !== fseek( $manifest, $state['offset'] ) ) {
 				throw new \RuntimeException( 'Could not read product ID manifest progress.' );
 			}
-			$mapper = new Mapper( $state['brand'] );
+			$mapper = new Mapper( $state['brand'], $state['image_revision'] ?? '' );
 			$artifact = array( 'rows' => array(), 'issues' => array(), 'omitted' => 0 );
 			for ( $count = 0; $count < self::BATCH_SIZE; $count++ ) {
 				$line = fgets( $manifest );

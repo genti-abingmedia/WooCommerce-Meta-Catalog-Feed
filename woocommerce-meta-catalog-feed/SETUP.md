@@ -2,7 +2,7 @@
 
 ## Install and generate
 
-Upload `woocommerce-meta-catalog-feed-1.2.1.zip` under **Plugins → Add New Plugin → Upload Plugin**, then activate it.
+Upload `woocommerce-meta-catalog-feed-1.2.2.zip` under **Plugins → Add New Plugin → Upload Plugin**, then activate it.
 
 Requirements: WordPress 6.6+, WooCommerce 9.6+, PHP 8.1+, a writable WordPress uploads directory, and working WooCommerce Scheduled Actions. Activate separately on each site; network activation is blocked.
 
@@ -36,7 +36,7 @@ Plugin dates display **Tirana time (Europe/Tirane)**, with automatic daylight-sa
 
 ### Upgrade from an earlier version
 
-Upload the 1.2.1 ZIP and choose WordPress's option to replace the existing plugin. Do not delete the old plugin first, because deletion runs uninstall cleanup. The existing URL, fallback brand, product exclusions, and completed CSV are preserved. Saved selections are preserved. Upgrading from 1.0.0 keeps **All products** as the default until you save a different selection.
+Upload the 1.2.2 ZIP and choose WordPress's option to replace the existing plugin. Do not delete the old plugin first, because deletion runs uninstall cleanup. The existing URL, fallback brand, product exclusions, and completed CSV are preserved. Saved selections are preserved. Upgrading from 1.0.0 keeps **All products** as the default until you save a different selection.
 
 After upgrading, use **Refresh now** to rebuild the CSV, wait for completion, then update the data source in Meta Commerce Manager. Version 1.2.1 adds a stable `wcmcf_image` query parameter to image URLs so Meta sees a new URL and can retry previously failed image fetches. No image re-upload is required. The parameter stays fixed across hourly builds and plugin releases, and changes when the selected attachment URL or modification date changes. Image replacements made outside WordPress must also update the attachment modification date to change this revision. Existing cached CSVs receive the new URLs only after a successful rebuild. Eligibility must be checked in Commerce Manager after image processing.
 
@@ -126,3 +126,7 @@ Generation status reflects local CSV generation. Only Commerce Manager's import 
 **Old prices:** Check last successful generation, server cron, and cache exclusions. Saving a selection or fallback brand queues a new generation. Refresh now uses the saved settings.
 
 **Uninstall:** Deactivation stops jobs and discards unfinished builds while retaining completed files/settings. Deleting the plugin removes its data and exclusion metadata. If filesystem permissions prevent deletion, remove the plugin-owned `wcmcf-feed` directory after resolving those permissions.
+
+### Request a fresh image fetch for all included products
+
+In version 1.2.2, tick **Renew image URLs for every included product** beside **Refresh now**, then click **Refresh now**. This generates a new shared image revision and restarts any unfinished build while retaining the last successful CSV. Wait for Ready, then update the data source in Commerce Manager. To include the full store, first save **All products**; exclusions and invalid-product checks still apply. This does not change product IDs, price, stock, or descriptions, does not contact Meta, and cannot force processing or eligibility. Normal hourly builds retain the revision. Keep the Cloudflare cache exception for `wcmcf_image` and `wcmcf_feed`.

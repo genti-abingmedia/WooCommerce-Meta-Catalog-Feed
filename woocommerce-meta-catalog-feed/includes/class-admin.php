@@ -45,7 +45,7 @@ final class Admin {
 	public static function refresh(): void {
 		self::authorize( 'wcmcf_refresh' );
 		if ( Plugin::configuration_error() ) { self::redirect( 'configuration' ); }
-		$queued = Builder::enqueue();
+		$queued = Builder::enqueue( isset( $_POST['renew_images'] ) && '1' === $_POST['renew_images'] );
 		if ( $queued && ! get_option( 'wcmcf_build' ) ) {
 			update_option( 'wcmcf_status', array( 'state' => 'queued', 'error' => '', 'updated' => time() ), false );
 		}

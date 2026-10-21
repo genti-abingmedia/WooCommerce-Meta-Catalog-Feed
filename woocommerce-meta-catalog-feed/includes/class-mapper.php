@@ -6,7 +6,7 @@ defined( 'ABSPATH' ) || exit;
 final class Mapper {
 	public const COLUMNS = array( 'id', 'title', 'description', 'availability', 'condition', 'link', 'image_link', 'brand', 'price', 'sale_price', 'item_group_id' );
 
-	public function __construct( private string $fallback_brand ) {}
+	public function __construct( private string $fallback_brand, private string $image_revision = '' ) {}
 
 	/** Null means deliberately omitted; WP_Error means invalid catalog data to report. */
 	public function row( \WC_Product $product ) {
@@ -36,6 +36,9 @@ final class Mapper {
 				// A stable URL revision prompts a fresh Meta fetch without changing every build.
 				// Keep the revision independent of plugin releases and product/price edits.
 				$revision = '1-' . substr( hash( 'sha256', $candidate . '|' . $image_id . '|' . get_post_field( 'post_modified_gmt', $image_id, 'raw' ) ), 0, 12 );
+				if ( '' !== $this->image_revision ) {
+					$revision .= '-' . $this->image_revision;
+				}
 				$image = add_query_arg( 'wcmcf_image', $revision, $candidate );
 				break;
 			}

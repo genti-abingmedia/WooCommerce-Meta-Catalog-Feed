@@ -27,6 +27,7 @@ wp plugin activate woocommerce-meta-catalog-feed
 python3 tests/check-http.py "http://localhost:${WCMCF_TEST_PORT}" --initial
 wp eval-file /opt/wcmcf-tests/integration.php
 wp eval-file /opt/wcmcf-tests/selection.php
+wp eval-file /opt/wcmcf-tests/image-renewal.php
 wp plugin install woo-discount-rules --version=2.6.18 --activate
 wp eval-file /opt/wcmcf-tests/discounts.php
 if [ -n "${WCMCF_PLAYWRIGHT_MODULE:-}" ]; then

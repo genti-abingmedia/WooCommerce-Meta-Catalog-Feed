@@ -67,10 +67,21 @@ assert 'wcmcf-select2-css' in html and '/assets/css/select2.css' in html
 import re
 forms = re.findall(r"<form\b.*?</form>", html, re.S)
 refresh = next(form for form in forms if 'value="wcmcf_refresh"' in form)
+assert 'name="renew_images"' in refresh and 'aria-describedby="wcmcf-renew-help"' in refresh
+assert not re.search(r'name="renew_images"[^>]*\bchecked\b', refresh)
 nonce = re.search(r'name="_wpnonce" value="([^"]+)"', refresh).group(1)
 payload = urllib.parse.urlencode({"action": "wcmcf_refresh", "_wpnonce": nonce}).encode()
 result = browser.open(urllib.request.Request(base + "/wp-admin/admin-post.php", data=payload)).read().decode()
 assert "Feed refresh queued" in result
+payload = urllib.parse.urlencode({"action": "wcmcf_refresh", "_wpnonce": nonce, "renew_images": "1"}).encode()
+result = browser.open(urllib.request.Request(base + "/wp-admin/admin-post.php", data=payload)).read().decode()
+assert "Feed refresh queued" in result
+try:
+    browser.open(urllib.request.Request(base + "/wp-admin/admin-post.php", data=urllib.parse.urlencode(
+        {"action": "wcmcf_refresh", "_wpnonce": "invalid", "renew_images": "1"}).encode()))
+    raise AssertionError("Image renewal must reject an invalid nonce")
+except urllib.error.HTTPError as error:
+    assert error.code == 403
 save = next(form for form in forms if 'value="wcmcf_save"' in form)
 nonce = re.search(r'name="_wpnonce" value="([^"]+)"', save).group(1)
 # WooCommerce's native protected product search supplies the name/SKU selector.

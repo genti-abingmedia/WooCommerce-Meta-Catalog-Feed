@@ -24,7 +24,7 @@ try {
 } catch ( \Throwable $wcmcf_error ) {
 	// Leave inaccessible filesystem data for the server administrator.
 }
-foreach ( array( 'wcmcf_fallback_brand', 'wcmcf_enabled', 'wcmcf_initial_refresh', 'wcmcf_selection', 'wcmcf_build', 'wcmcf_result', 'wcmcf_status' ) as $wcmcf_option ) {
+foreach ( array( 'wcmcf_image_revision', 'wcmcf_fallback_brand', 'wcmcf_enabled', 'wcmcf_initial_refresh', 'wcmcf_selection', 'wcmcf_build', 'wcmcf_result', 'wcmcf_status' ) as $wcmcf_option ) {
 	delete_option( $wcmcf_option );
 }
 delete_metadata( 'post', 0, '_wcmcf_exclude', '', true );
